@@ -1,8 +1,8 @@
 // Тип для способов оплаты
-type PaymentMethod = 'cash' | 'card';
+export type PaymentMethod = 'cash' | 'online';
 
 // Тип для статуса заказа
-enum OrderStatus {
+export enum OrderStatus {
     Pending = 'pending',
     Processing = 'processing',
     Shipped = 'shipped',
@@ -10,27 +10,49 @@ enum OrderStatus {
     Cancelled = 'cancelled'
 }
 
+export type Category =
+    'софт-скил'
+    |'другое'
+    |'кнопка'
+    |'хард-скил'
+    |'дополнительное'
+
+
 //интерфейс для товара
-interface Product {
-    id: number;
-    name: string;
-    description: string;
-    price: number;
-    imageUrl: string;
+export interface IProduct {
+    category?: string;
+    description?: string;
+    id: string;
+    image?: string;
+    price: number|null;
+    title: string;
 }
 
-//интерфейс для элемента корзины
-interface CartItem {
-    product: Product;
-    quantity: number;
+export interface IAppState {
+    catalog: IProduct[];
+    basket: string[];
+    preview: string | null;
+    order: IOrder | null;
+    // loading: boolean;
 }
 
 //интерфейс для заказа
-interface Order {
-    paymentMethod: string;
-    shippingAddress: string;
+export interface IOrderForm  {
+    payment?: PaymentMethod;
     email: string;
     phone: string;
-    items: CartItem[];
+    address: string;
+}
+//заказанные товары
+export interface IOrder extends IOrderForm {
+    items: string[]
+    total?: number;
 }
 
+export type FormErrors = Partial<Record<keyof IOrder, string>>;
+
+//интерфейс для ответа на успешный заказ
+export interface IOrderResult {
+    id: string;
+    total: number;
+} 
