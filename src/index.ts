@@ -10,6 +10,8 @@ import { ensureElement, cloneTemplate } from './utils/utils';
 import { BasketItem, CatalogItem } from './components/Card';
 import { Basket } from './components/common/Basket';
 import { Order } from './components/Order';
+import { IOrderForm } from './types';
+import { Contacts } from './components/Contacts';
 
 const events = new EventEmitter();
 const api = new LarekAPI(CDN_URL, API_URL);
@@ -33,12 +35,14 @@ const cardPreviewTemplate = ensureElement<HTMLTemplateElement>('#card-preview');
 const cardBasketTemplate = ensureElement<HTMLTemplateElement>('#card-basket');
 const basketTemplate = ensureElement<HTMLTemplateElement>('#basket');
 const orderTemplate = ensureElement<HTMLTemplateElement>('#order');
+const contactsTemplate = ensureElement<HTMLTemplateElement>('#contacts');
 const successTemplate = ensureElement<HTMLTemplateElement>('#success');
 
 // Переиспользуемые части интерфейса
 
 const basket = new Basket(cloneTemplate(basketTemplate), events);
 const order = new Order(cloneTemplate(orderTemplate), events);
+const contacts = new Contacts(cloneTemplate(contactsTemplate), events);
 const basketButton = document.querySelector('.header__basket');
 
 // Изменились элементы каталога
@@ -71,6 +75,9 @@ events.on('preview:changed', (item: ProductItem) => {
         // Устанавливаем обработчик на кнопку "в корзину"
     card.addToCart = () => {
         appData.toggleOrderedItem(item.id, true);
+//удалить
+console.log(item.id);  
+
         card.buttonText = 'Удалить'; // Изменяем текст кнопки
         modal.close(); // Закрываем модальное окно
         events.emit('larek:changed');
@@ -99,24 +106,28 @@ events.on('preview:changed', (item: ProductItem) => {
     });
 
     // обновление корзины
-events.on('larek:changed', () => {
-    page.counter = appData.itemCount();
-    basket.total = appData.getTotal();
-
-    basket.items = appData.getSelectedItems().map(item => {
-        const card = new BasketItem(cloneTemplate(cardBasketTemplate), {
-            onClick: (event) => {
-                const deleteBasketButton = event.target as HTMLButtonElement;
-                appData.toggleOrderedItem(item.id, false);
-                basket.selected = appData.order.items;
-        }
-});
-return card.render({
-            title: item.title,
-            price: item.price
+    events.on('larek:changed', () => {
+        page.counter = appData.itemCount();
+        basket.total = appData.getTotal();
+        basket.items = appData.getSelectedItems().map((item, index) => {
+            const card = new BasketItem(cloneTemplate(cardBasketTemplate), {
+                onClick: (event) => {
+                    const deleteBasketButton = event.target as HTMLButtonElement;
+                    appData.toggleOrderedItem(item.id, false);
+                    page.counter = appData.itemCount();
+                    basket.total = appData.getTotal();
+                    basket.selected = appData.order.items;
+                    // Обновление отображения позиций в корзине
+                    events.emit('larek:changed');
+                }
             });
-});
-});
+            card.setIndex(index); // Устанавливаем индекс для карточки
+            return card.render({
+                title: item.title,
+                price: item.price,
+            });
+        });
+    });
 
 // Блок прокрутки страницы при открытии модалки
 events.on('modal:open', () => {
@@ -128,33 +139,39 @@ events.on('modal:close', () => {
     page.locked = false;
 });
 
-// basketButton.addEventListener('click', () => {
-//     events.emit('basket:open');
-// });
-
 basketButton.addEventListener('click', () => {
     modal.render({
         content: basket.render()
     });
 });
 
-// // Открыть корзину
-// events.on('basket:open', () => {
-//     modal.render({
-//         content: basket.render()
-//     });
-// });
-
 // Открыть форму заказа
 events.on('order:open', () => {
     modal.render({
         content: order.render({
+            payment: 'online',
+            address: '',
+            valid: false,
+            errors: []
+        })
+    });
+});
+
+// Открыть форму контактов
+events.on('contacts:open', () => {
+    modal.render({
+        content: contacts.render({
             phone: '',
             email: '',
             valid: false,
             errors: []
         })
     });
+});
+
+// Изменилось одно из полей заказа
+events.on(/^order\..*:change/, (data: { field: keyof IOrderForm, value: string }) => {
+    appData.setOrderField(data.field, data.value);
 });
 
 // Изменилось состояние валидации формы
