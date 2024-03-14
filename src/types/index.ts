@@ -39,8 +39,8 @@ export interface IAppState {
 //интерфейс для заказа
 export interface IOrderForm  {
     payment?: PaymentMethod;
-    email: string;
-    phone: string;
+    email?: string;
+    phone?: string;
     address: string;
 }
 //заказанные товары

@@ -40,21 +40,6 @@ export class AppState extends Model<IAppState> {
         this.emitChanges('preview:changed', item);
     }
 
-    // toggleOrderedItem(id: string, isIncluded: boolean) {
-    //     const index = this.order.items.indexOf(id);
-    //     if (isIncluded) {
-    //         //добавление товара в корзину
-    //         if (index === -1) {
-    //             this.order.items.push(id); // добавляем только если не найден в массиве
-    //         }
-    //     } else {
-    //         //удаление из корзины
-    //         if (index !== -1) {
-    //             this.order.items.splice(index, 1); // удаляем только если найден в массиве
-    //         }
-    //     }
-    // }
-
     toggleOrderedItem(id: string, isIncluded: boolean) {
         if (isIncluded) {
             //добавление товара в корзину
@@ -86,11 +71,8 @@ export class AppState extends Model<IAppState> {
 
     setOrderField(field: keyof IOrderForm, value: string) {
         // this.order[field] = value;
-        // Если изменяемое поле - payment, устанавливаем значение online
-    if (field === 'payment') {
-        this.order[field] = 'online';
-    } else {
-        // Иначе, устанавливаем значение, переданное в параметре
+        /// Если изменяемое поле не является полем оплаты, устанавливаем значение
+    if (field !== 'payment') {
         this.order[field] = value;
     }
 
@@ -101,6 +83,9 @@ export class AppState extends Model<IAppState> {
 
     validateOrder() {
         const errors: typeof this.formErrors = {};
+        if (!this.order.payment) {
+            errors.payment = 'Необходимо указать способ оплаты';
+        }
         if (!this.order.address) {
             errors.address = 'Необходимо указать адрес';
         }

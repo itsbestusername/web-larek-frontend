@@ -38,5 +38,7 @@ this._address = ensureElement<HTMLInputElement>('input[name="address"]', contain
     //не находит address
     // set address(value: string) {
     //     (this.container.elements.namedItem('adress') as HTMLInputElement).value = value;
+    
+    // console.log(this.container.elements.namedItem('adress'))
     // }
 }

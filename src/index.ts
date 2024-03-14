@@ -74,16 +74,13 @@ events.on('preview:changed', (item: ProductItem) => {
         const card = new CatalogItem(cloneTemplate(cardPreviewTemplate));
         // Устанавливаем обработчик на кнопку "в корзину"
     card.addToCart = () => {
-        appData.toggleOrderedItem(item.id, true);
-//удалить
-console.log(item.id);  
-
+        appData.toggleOrderedItem(item.id, true);  
         card.buttonText = 'Удалить'; // Изменяем текст кнопки
         modal.close(); // Закрываем модальное окно
         events.emit('larek:changed');
     };
 
-    // Устанавливаем обработчик на кнопку "удалить из корзины", если товар уже в корзине
+    // Устанавливаем обработчик на кнопку "удалить"
     if (appData.order.items.includes(item.id)) {
         card.buttonText = 'Удалить'; // Изменяем текст кнопки
         card.addToCart = () => {
@@ -116,12 +113,14 @@ console.log(item.id);
                     appData.toggleOrderedItem(item.id, false);
                     page.counter = appData.itemCount();
                     basket.total = appData.getTotal();
-                    basket.selected = appData.order.items;
+                    basket.selected = appData.getTotal();
                     // Обновление отображения позиций в корзине
                     events.emit('larek:changed');
                 }
             });
-            card.setIndex(index); // Устанавливаем индекс для карточки
+            // Устанавливаем индекс для карточки
+            card.setIndex(index); 
+            basket.selected = appData.getTotal();
             return card.render({
                 title: item.title,
                 price: item.price,
@@ -175,16 +174,11 @@ events.on(/^order\..*:change/, (data: { field: keyof IOrderForm, value: string }
 });
 
 // Изменилось состояние валидации формы
-// events.on('formErrors:change', (errors: Partial<IOrderForm>) => {
-//     const { email, phone } = errors;
-//     order.valid = !email && !phone;
-//     order.errors = Object.values({phone, email}).filter(i => !!i).join('; ');
-// });
-
-// // Изменилось одно из полей
-// events.on(/^order\..*:change/, (data: { field: keyof IOrderForm, value: string }) => {
-//     appData.setOrderField(data.field, data.value);
-// });
+events.on('formErrors:change', (errors: Partial<IOrderForm>) => {
+    const { email, phone, address, payment } = errors;
+    order.valid = !email && !phone || !address && !payment;
+    order.errors = Object.values({phone, email, address, payment}).filter(i => !!i).join('; ');
+});
 
 
 // Получаем товары с сервера

@@ -27,6 +27,7 @@ export class Basket extends Component<IBasketView> {
         }
 
         this.items = [];
+        this.selected = 0;
     }
 
     set items(items: HTMLElement[]) {
@@ -39,8 +40,9 @@ export class Basket extends Component<IBasketView> {
         }
     }
 
-    set selected(items: string[]) {
-        if (items.length) {
+    set selected(total: number) {
+        //исключаем бесценные товары
+        if (total > 0) {
             this.setDisabled(this._button, false);
         } else {
             this.setDisabled(this._button, true);
