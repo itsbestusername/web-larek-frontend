@@ -1,5 +1,5 @@
 // Тип для способов оплаты
-export type PaymentMethod = 'cash' | 'online';
+export type PaymentMethod = 'cash' | 'online' | null;
 
 // Тип для статуса заказа
 export enum OrderStatus {

@@ -23,22 +23,21 @@ this._address = ensureElement<HTMLInputElement>('input[name="address"]', contain
         })
         
         this._payCash.addEventListener('click', () => {
-            this._payCash.classList.add('button_alt-active');
-            this._payOnline.classList.remove('button_alt-active');
-            this.events.emit('payment:change', { payment: 'cash' });
+            this.events.emit('payment:change', { payment: 'cash', clickedButton: this._payCash, otherButton: this._payOnline }); 
         })
 
         this._payOnline.addEventListener('click', () => {
-            this._payOnline.classList.add('button_alt-active');
-            this._payCash.classList.remove('button_alt-active');
-            this.events.emit('payment:change', { payment: 'online' });
+            this.events.emit('payment:change', { payment: 'cash', clickedButton: this._payOnline, otherButton: this._payCash });
         });
     }
 
-    //не находит address
-    // set address(value: string) {
-    //     (this.container.elements.namedItem('adress') as HTMLInputElement).value = value;
-    
-    // console.log(this.container.elements.namedItem('adress'))
-    // }
+    toggleActiveButton(clickedButton: HTMLButtonElement, otherButton: HTMLButtonElement) {
+        clickedButton.classList.add('button_alt-active');
+        otherButton.classList.remove('button_alt-active');
+    }
+
+    //возможность установки адреса
+    set address(value: string) {
+        (this.container.elements.namedItem('address') as HTMLInputElement).value = value;
+    }
 }

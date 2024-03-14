@@ -156,6 +156,19 @@ events.on('order:open', () => {
     });
 });
 
+// Изменилось одно из полей заказа
+events.on(/^order\..*:change/, (data: { field: keyof IOrderForm, value: string }) => {
+    appData.setOrderField(data.field, data.value);
+    appData.validateOrder();
+});
+
+//изменился способ оплаты
+events.on('payment:change', (data: { payment: 'cash' | 'online', clickedButton: HTMLButtonElement, otherButton: HTMLButtonElement }) => {
+    order.toggleActiveButton(data.clickedButton, data.otherButton);
+    appData.setPaymentField(data.payment);
+    appData.validateOrder();
+});
+
 // Открыть форму контактов
 events.on('contacts:open', () => {
     modal.render({
@@ -168,16 +181,17 @@ events.on('contacts:open', () => {
     });
 });
 
-// Изменилось одно из полей заказа
-events.on(/^order\..*:change/, (data: { field: keyof IOrderForm, value: string }) => {
-    appData.setOrderField(data.field, data.value);
+//изменилось один из контактов
+events.on(/^contacts\..*:change/, (data: { field: keyof IOrderForm, value: string }) => {
+    appData.setContactField(data.field, data.value);
+
 });
 
 // Изменилось состояние валидации формы
-events.on('formErrors:change', (errors: Partial<IOrderForm>) => {
-    const { email, phone, address, payment } = errors;
-    order.valid = !email && !phone || !address && !payment;
-    order.errors = Object.values({phone, email, address, payment}).filter(i => !!i).join('; ');
+events.on('formErrors:contactsChange', (errors: Partial<IOrderForm>) => {
+    const { email, phone } = errors;
+    order.valid = !email && !phone;
+    order.errors = Object.values({phone, email}).filter(i => !!i).join('; ');
 });
 
 
