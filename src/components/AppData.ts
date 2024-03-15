@@ -1,20 +1,11 @@
 import _ from 'lodash';
 import { IOrderForm } from '../types';
 import { Model } from './base/Model';
-import { FormErrors, IAppState, IProduct, IOrder, Category } from '../types';
+import { FormErrors, IAppState, IProduct, IOrder } from '../types';
 
 export type CatalogChangeEvent = {
-	catalog: ProductItem[];
+	catalog: IProduct[];
 };
-
-export class ProductItem extends Model<IProduct> {
-	id: string;
-	description: string;
-	image: string;
-	title: string;
-	category: Category;
-	price: number | null;
-}
 
 export class AppState extends Model<IAppState> {
 	basket: string[];
@@ -31,11 +22,20 @@ export class AppState extends Model<IAppState> {
 	formErrors: FormErrors = {};
 
 	setCatalog(items: IProduct[]) {
-		this.catalog = items.map((item) => new ProductItem(item, this.events));
-		this.emitChanges('items:changed', { catalog: this.catalog });
-	}
+        this.catalog = items.map((item) => {
+            return {
+                id: item.id,
+                description: item.description,
+                image: item.image,
+                title: item.title,
+                category: item.category,
+                price: item.price,
+            };
+        });
+        this.emitChanges('items:changed', { catalog: this.catalog });
+    }
 
-	setPreview(item: ProductItem) {
+	setPreview(item: IProduct) {
 		this.preview = item.id;
 		this.emitChanges('preview:changed', item);
 	}
@@ -63,6 +63,10 @@ export class AppState extends Model<IAppState> {
 		);
 	}
 
+	set total(total: number) {
+		this.order.total = total;
+	}
+
 	// Метод для вычисления количества товаров в корзине
 	itemCount(): number {
 		return this.order.items.length;
@@ -76,12 +80,17 @@ export class AppState extends Model<IAppState> {
 		if (field !== 'payment') {
 			this.order[field] = value;
 		}
+
+		if (this.validateOrder()) {
+			this.events.emit('order:ready', this.order);
+		}
 	}
 
 	setPaymentField(payment: 'cash' | 'online') {
 		this.order.payment = payment;
 	}
 
+	//валидация модалки с адресом
 	validateOrder() {
 		const errors: typeof this.formErrors = {};
 		if (this.order.payment === null) {
@@ -106,6 +115,7 @@ export class AppState extends Model<IAppState> {
 		}
 	}
 
+	//валидация модалки с контактами
 	validateContacts() {
 		const errors: typeof this.formErrors = {};
 		if (!this.order.email) {

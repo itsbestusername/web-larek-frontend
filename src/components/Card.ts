@@ -1,18 +1,17 @@
 import { Component } from './base/Component';
-import { ensureElement, bem } from '../utils/utils';
-import clsx from 'clsx';
+import { ensureElement } from '../utils/utils';
 import { Category } from '../types';
-import { AppState } from './AppData';
-import { IEvents } from './base/events';
 
 interface ICardActions {
 	onClick: (event: MouseEvent) => void;
 }
 
+//писывает карточку товара, которая может содержать дополнительные пользовательские данные
 export interface ICard<T> {
 	title: string;
 	description?: string | string[];
 	image?: string;
+	button?: HTMLButtonElement;
 	price: number | null;
 	category?: string;
 	id: string;
@@ -88,29 +87,39 @@ export class Card<T> extends Component<ICard<T>> {
 			this.setText(this._price, value.toString() + ' синапсов');
 		} else {
 			this._price.textContent = 'Бесценно';
+			this.setDisabled(this._button, true); // Деактивируйте кнопку
 		}
 	}
 
 	set category(value: string) {
 		if (value) {
 			this.setText(this._category, value);
+			const categoryClass = this.getCategoryClass(value);
+			this._category.classList.add(categoryClass);
 		} else {
 			this._category?.remove();
 		}
+	}
+
+	private getCategoryClass(categoryName: string): string {
+		const categoryMap: Record<string, string> = {
+			'софт-скил': 'card__category_soft',
+			дополнительное: 'card__category_additional',
+			кнопка: 'card__category_button',
+			'хард-скил': 'card__category_hard',
+			другое: 'card__category_other',
+		};
+		return categoryMap[categoryName] || '';
 	}
 }
 
 export type CatalogItemStatus = {
 	category: Category;
-	label: string;
 };
 
 export class CatalogItem extends Card<CatalogItemStatus> {
-	protected _category: HTMLElement;
-
 	constructor(container: HTMLElement, actions?: ICardActions) {
 		super('card', container, actions);
-		this._category = ensureElement<HTMLElement>(`.card__category`, container);
 	}
 
 	set addToCart(callback: () => void) {
@@ -136,14 +145,14 @@ export class BasketItem extends Card<BasketItem> {
 		this._index = ensureElement<HTMLElement>(`.basket__item-index`, container);
 		this._deleteButton = container.querySelector(`.basket__item-delete`);
 
-		if (!this._deleteButton) {
+		if (this._deleteButton) {
 			this._deleteButton.addEventListener('change', (event: MouseEvent) => {
 				actions?.onClick?.(event);
 			});
 		}
 	}
 
-    setIndex(index: number) {
-        this._index.textContent = (index + 1).toString();
-    }
+	setIndex(index: number) {
+		this._index.textContent = (index + 1).toString();
+	}
 }
