@@ -230,7 +230,9 @@ events.on('contacts:submit', () => {
 					},
 				}
 			);
-
+			appData.clearBasket();
+			events.emit('larek:changed');
+			basket.selected = appData.getTotal();
 			modal.render({
 				content: success.render({}),
 			});
