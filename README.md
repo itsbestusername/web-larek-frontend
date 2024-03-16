@@ -212,7 +212,7 @@ uri: Строка, представляющая конечный путь для
 data: Объект с данными для отправки на сервер.
 method: Опциональный параметр, определяющий метод запроса (POST, PUT или DELETE). По умолчанию используется POST.
 
-- **handleResponse(response: Response): Promise<object>**   
+- ```handleResponse(response: Response): Promise<object>```  
 Защищенный метод, который Обрабатывает ответ от сервера.
 response: Объект, представляющий ответ от сервера.
 
