@@ -13,7 +13,7 @@ export type FormErrors = Partial<Record<keyof IOrder, string>>;
 //интерфейс для товара
 export interface IProduct {
 	category?: string;
-	description?: string | string[];
+	description?: string;
 	id: string;
 	image?: string;
 	price: number | null;
